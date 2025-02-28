@@ -1,0 +1,23 @@
+{
+  "name": "impv4",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alfredo003/IMPV4.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alfredo003/IMPV4/issues"
+  },
+  "homepage": "https://github.com/alfredo003/IMPV4#readme",
+  "description": "",
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

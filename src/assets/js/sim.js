@@ -1,5 +1,3 @@
-
-
 var visited_host = [];
 
 var private_subnets = [
@@ -18,7 +16,7 @@ function ip_to_int(s)
     if (tab.length != 4) return (null);
     if (isNaN(tab[0]) || tab[0] < 0 || tab[0] > 223 || isNaN(tab[1]) || tab[1] < 0 || tab[1] > 255 ||
 	isNaN(tab[2]) || tab[2] < 0 || tab[2] > 255 || isNaN(tab[3]) || tab[3] < 0 || tab[3] > 255) return (null);
-    if (tab[0] == 127) { g_sim_logs += "loopback address detected on outside interface\n"; return (null); }   // maybe not the best option to deal with 127/8 loopback addresses...
+    if (tab[0] == 127) { g_sim_logs += "Endereço de loopback detectado na interface externa\n"; return (null); }
     return ( ( (tab[0] << 24) | (tab[1] << 16) | (tab[2] << 8) | (tab[3]) ) >>> 0);
 }
 
@@ -106,10 +104,10 @@ function get_route_gate(r)
 function ip_match_if(ip, itf)
 {
     var iip, imask;
-    if ((iip = get_if_ip(itf)) === null) { g_sim_logs += 'on interface '+itf['if']+': invalid IP address\n'; return (0); }
-    if ((imask = get_if_mask(itf)) === null) { g_sim_logs += 'on interface '+itf['if']+': invalid netmask\n'; return (0); }
+    if ((iip = get_if_ip(itf)) === null) { g_sim_logs += 'Na interface '+itf['if']+': endereço IP inválido\n'; return (0); }
+    if ((imask = get_if_mask(itf)) === null) { g_sim_logs += 'Na interface '+itf['if']+': máscara de rede inválida\n'; return (0); }
 //    my_console_log("## "+iip+" & "+imask+" == "+ip+" & "+imask);
-    if (iip == ip) { g_sim_logs += "duplicate IP ("+get_if_ip_str(itf)+")\n"; return (0); } // ip_match_if is called only on output, not on arrival
+    if (iip == ip) { g_sim_logs += "IP duplicado ("+get_if_ip_str(itf)+")\n"; return (0); }
     if ((iip & imask) == (ip & imask))
     {
 	// if ip match the interface network, check that the ip is not the network addr or broadcast ?
@@ -126,15 +124,15 @@ function ip_match_route(ip, r)
     if (str == 'default') str = '0.0.0.0/0';
 //    my_console_log("ip_match_route route :"+JSON.stringify(r));
     if (r['h']['type'] == "internet" && str == '0.0.0.0/0')
-    { g_sim_logs += 'invalid default route on internet '+r['hid']+'\n'; return (0); }
+    { g_sim_logs += 'Rota padrão inválida na internet '+r['hid']+'\n'; return (0); }
     var tab = str.split('/');
 //    my_console_log("ip_match_route check : "+str+" againt ip "+ip);
     if (tab.length != 2)
-    { g_sim_logs += 'invalid route on host '+r['hid']+'\n'; return (0); }
+    { g_sim_logs += 'Rota inválida no host '+r['hid']+'\n'; return (0); }
     if ((rip = ip_to_int(tab[0])) === null)
-    { g_sim_logs += 'invalid route on host '+r['hid']+'\n'; return (0); }
+    { g_sim_logs += 'Rota inválida no host '+r['hid']+'\n'; return (0); }
     if ((rmask = mask_to_int('/'+tab[1])) === null)
-    { g_sim_logs += 'invalid route on host '+r['hid']+'\n'; return (0); }
+    { g_sim_logs += 'Rota inválida no host '+r['hid']+'\n'; return (0); }
     if ((rip & rmask) == (ip & rmask)) return (1);
     return (0);
 }
@@ -153,13 +151,13 @@ function rec_route(ip_dest, local_target, input_itf, h)   // return array of des
 	my_console_log(" ** to "+ip_dest+" / host "+h['id']);
 
     // loop detection here
-    if (visited_host.includes(h)) { g_sim_logs += "on "+h['id']+' : loop detected\n'; return ([]); }
+    if (visited_host.includes(h)) { g_sim_logs += "No "+h['id']+': loop detectado\n'; return ([]); }
     visited_host.push(h);
 
     // if switch : rec_route to all links
     if (h['type'] == 'switch')
     {
-	g_sim_logs += 'on switch '+h['id']+': pass to all connections\n';
+	g_sim_logs += 'No switch '+h['id']+': passando para todas as conexões\n';
 	ret = [];
 	links.forEach(l => {if (l['e1']['hid'] == h['id']) ret = ret.concat(rec_route(ip_dest, local_target, l['e2'], l['h2']));
 			    else if (l['e2']['hid'] == h['id']) ret = ret.concat(rec_route(ip_dest, local_target, l['e1'], l['h1']))});
@@ -169,18 +167,18 @@ function rec_route(ip_dest, local_target, input_itf, h)   // return array of des
     // on a host, is my current gate ip == the ip of the input itf ?
     if (input_itf != null)
     {
-	if ((itf_ip = get_if_ip(input_itf)) === null) { g_sim_logs += 'on '+h['id']+': invalid IP on input interface '+input_itf['if']+'\n'; return ([]); }
-	if (itf_ip != local_target) { g_sim_logs += 'on '+h['id']+' : packet not for me\n'; return ([]); }
+	if ((itf_ip = get_if_ip(input_itf)) === null) { g_sim_logs += 'No '+h['id']+': IP inválido na interface de entrada '+input_itf['if']+'\n'; return ([]); }
+	if (itf_ip != local_target) { g_sim_logs += 'No '+h['id']+': pacote não é para mim\n'; return ([]); }
     }
 
     // accepted on host
-    g_sim_logs += 'on '+h['id']+' : packet accepted\n';
+    g_sim_logs += 'No '+h['id']+': pacote aceito\n';
 
     // internet does no route private addresses, so "internet interface" reject private subnets
     if (h['type'] == 'internet')
     {
 	if (ip_match_route(ip_dest, private_subnets[0]) || ip_match_route(ip_dest, private_subnets[1]) || ip_match_route(ip_dest, private_subnets[2]))
-	{ g_sim_logs += 'private subnets not routed over internet\n'; return ([]); }
+	{ g_sim_logs += 'Subredes privadas não são roteadas pela internet\n'; return ([]); }
     }
     
    // arrived ?   check not only input itf, in case another itf is the target;  do not check if input_itf is null (departure host)
@@ -188,7 +186,7 @@ function rec_route(ip_dest, local_target, input_itf, h)   // return array of des
     {
 	ret = [];
 	ifs.forEach(itf => {if (itf['hid'] == h['id'] && (itf_ip = get_if_ip(itf)) !== null && ip_dest === itf_ip) ret.push(itf);});
-	if (ret.length > 0) { g_sim_logs += 'on '+h['id']+': destination IP reached\n'; my_console_log("  destination reached !"); return (ret); } // keep multiple : means that 2 interfaces have the same ip
+	if (ret.length > 0) { g_sim_logs += 'No '+h['id']+': IP de destino alcançado\n'; my_console_log("Destino alcançado!"); return (ret); }
     }
 
     // ip_dest match an interface ?
@@ -203,19 +201,19 @@ function rec_route(ip_dest, local_target, input_itf, h)   // return array of des
 	    {
 		my_console_log("   match itf "+ifs[i]['if']);
 		nbif ++;
-		g_sim_logs += 'on '+h['id']+': send to '+ifs[i]['if']+'\n';
+		g_sim_logs += 'No '+h['id']+': enviando para '+ifs[i]['if']+'\n';
 		links.forEach(l => {if (l['if1'] == ifs[i]['if']) ret = ret.concat(rec_route(ip_dest, ip_dest, l['e2'], l['h2']));
 				    else if (l['if2'] == ifs[i]['if']) ret = ret.concat(rec_route(ip_dest, ip_dest, l['e1'], l['h1']))});
 	    }
 	}
     }
      // force fail if multiple ifs on same subnet
-    if (nbif > 1) { g_sim_logs += 'on '+h['id']+': error on destination ip - multiple interface match\n'; return ([]); }
+    if (nbif > 1) { g_sim_logs += 'No '+h['id']+': erro no IP de destino - múltiplas interfaces correspondem\n'; return ([]); }
     if (nbif == 1) return (ret);
 
     // else nbif == 0, no interface match, explore routes
     my_console_log("  no itf for ip destination, go through gate");
-    g_sim_logs += 'on '+h['id']+': destination does not match any interface. pass through routing table\n';
+    g_sim_logs += 'No '+h['id']+': destino não corresponde a nenhuma interface. Passando pela tabela de roteamento\n';
 
     ret = [];
     nb_routes = 0;
@@ -225,10 +223,10 @@ function rec_route(ip_dest, local_target, input_itf, h)   // return array of des
 	{
 	    if (ip_match_route(ip_dest, routes[j]))
 	    {
-		g_sim_logs += 'on '+h['id']+' : route match '+get_route_route_str(routes[j])+'\n';
+		g_sim_logs += 'No '+h['id']+': rota corresponde '+get_route_route_str(routes[j])+'\n';
 		nb_routes ++;
 		var ip_gate = get_route_gate(routes[j]);
-		if (ip_gate === null) { g_sim_logs += "on "+h['id']+": invalid gate IP, route "+get_route_route_str(routes[j])+"\n"; return ([]);}
+		if (ip_gate === null) { g_sim_logs += "No "+h['id']+": IP do gateway inválido, rota "+get_route_route_str(routes[j])+"\n"; return ([]);}
 		nbif = 0;
 		for (i = 0; i < ifs.length; i++)
 		{
@@ -237,24 +235,24 @@ function rec_route(ip_dest, local_target, input_itf, h)   // return array of des
 			if (ip_match_if(ip_gate, ifs[i]))
 			{
 			    my_console_log("   gate ip match itf "+ifs[i]['if']);
-			    g_sim_logs += 'on '+h['id']+': send to gateway '+get_route_gate_str(routes[j])+' through interface '+ifs[i]['if']+'\n';
+			    g_sim_logs += 'No '+h['id']+': enviando para gateway '+get_route_gate_str(routes[j])+' através da interface '+ifs[i]['if']+'\n';
 			    nbif ++;
 			    links.forEach(l => {if (l['if1'] == ifs[i]['if']) ret = ret.concat(rec_route(ip_dest, ip_gate, l['e2'], l['h2']));
 						else if (l['if2'] == ifs[i]['if']) ret = ret.concat(rec_route(ip_dest, ip_gate, l['e1'], l['h1']))});
 			}
 		    }
 		}
-		if (nbif > 1) { g_sim_logs += 'on '+h['id']+' : error on gate ip - multiple interface match\n'; return ([]); }
+		if (nbif > 1) { g_sim_logs += 'No '+h['id']+': erro no IP do gateway - múltiplas interfaces correspondem\n'; return ([]); }
 	    }
 	}
 	if (nb_routes > 0)  // only first route is explored.
 	{
-	    if (nbif == 0) g_sim_logs += 'on '+h['id']+' : route match but no interface for gateway '+get_route_gate_str(routes[j])+'\n';
+	    if (nbif == 0) g_sim_logs += 'No '+h['id']+': rota corresponde mas não há interface para o gateway '+get_route_gate_str(routes[j])+'\n';
 	    return (ret);
 	}
     }
     // no match, fail
-    g_sim_logs += 'on '+h['id']+': destination does not match any route\n';
+    g_sim_logs += 'No '+h['id']+': destino não corresponde a nenhuma rota\n';
     return ([]);
 }
 
@@ -282,9 +280,9 @@ function sim_reach_gen(g)
 		break;     // if one interface matches, that's enough - if ret > 1 it's because another host matches
 	}
     }
-    if (ret.length <= 0) return ({text:'KO - No forward way, try again ...', status:0});
-    if (ret.length > 1) return ({text:'KO - Multiple destination hosts match ... ', status:0});
-    if (ret[0][g['dst_type']] != g['dst']) return ({text:'KO - Correct IP reached but wrong '+g['dst_name']+', try again ...', status:0});
+    if (ret.length <= 0) return ({text:'ERRO - Tente novamente...', status:0});
+    if (ret.length > 1) return ({text:'ERRO - Múltiplos hosts de destino correspondem...', status:0});
+    if (ret[0][g['dst_type']] != g['dst']) return ({text:'ERRO - IP correto alcançado mas '+g['dst_name']+' errado, tente novamente...', status:0});
     
     // now reverse way
 
@@ -306,11 +304,11 @@ function sim_reach_gen(g)
                 break;     // if one interface matches, that's enough - if ret > 1 it's because another host matches
 	}
     }
-    if (ret.length <= 0) return ({text:'KO - No reverse way, try again ...', status:0});
-    if (ret.length > 1) return ({text:'KO - Multiple origin hosts match ... ', status:0});
-    if (ret[0][g['src_type']] != g['src']) return ({text:'KO - Correct IP reached but wrong '+g['src_name']+', try again ...', status:0});
+    if (ret.length <= 0) return ({text:'ERRO - Sem caminho de volta, tente novamente...', status:0});
+    if (ret.length > 1) return ({text:'ERRO - Múltiplos hosts de origem correspondem...', status:0});
+    if (ret[0][g['src_type']] != g['src']) return ({text:'ERRO - IP correto alcançado mas '+g['src_name']+' errado, tente novamente...', status:0});
     
-    return ({text:'OK - Congratulations !!', status:1});
+    return ({text:'OK - Parabéns!!', status:1});
 }
 
 

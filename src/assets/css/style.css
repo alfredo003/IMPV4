@@ -29,19 +29,32 @@ div {
     text-align: center;
 }
 
-
+#btn_all_goals{
+    text-transform: uppercase;
+     background-color: #4caf50;
+     border: none;
+     color: #fff;
+    margin: 10px;
+    padding: 10px;
+}
+#btn_dl_config{
+    text-transform: uppercase;
+     background-color: #aa0017;
+     border: none;
+     color: #fff;
+    margin: 10px;
+    padding: 10px;
+}
 /* goals div */
 .goals_div {
-    background-color: #00AAAA;
     width:100%;
-    border:5px solid #00AAAA;
-    border-radius:5px;
     padding: 5px;
+    color: #fff;
 }
 
 .goals_div h2 {
     margin:5px;
-    font-style:italic;
+    color: #fff;
 }
 
 
@@ -83,7 +96,6 @@ div {
     min-height: 50px;
     background-color:rgba(150, 150, 255, 0.9);
     border: 3px solid rgba(150, 150, 255, 0.9);
-    border-radius: 3px;
     /* will be updated by script : position, top, left */
 }
 
@@ -99,14 +111,12 @@ div {
 .itf_div {
     min-width: 176px;
     height: 70px;
-    background-color: rgba(150, 150, 150, 0.9);
+    background-color: rgba(204, 204, 204, 0.9);
     border: 3px solid rgba(150, 150, 150, 0.9);
-    border-radius: 3px;
     /* will be updated by script : position, top, left */
 }
 
 /* intro footnote */
 .footnote {
     font-size:70%;
-    font-style:italic;
 }

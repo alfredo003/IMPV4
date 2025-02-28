@@ -103,7 +103,7 @@ function show_host(root, h)
     newelem.style.height = h['h']+'px';
     newelem.style.top = h['y'] + 'px';
     newelem.style.left = h['x'] + 'px';
-    newelem.style.backgroundImage = 'url(img/'+h['img']+')';
+    newelem.style.backgroundImage = "url(../assets/" + h["img"] + ")";
     root.appendChild(newelem);
 
     // label + routes
@@ -279,7 +279,7 @@ function show_goals(g)
 {
     g_sim_logs += '******* Goal ID '+g['id']+' ********\n';
     var div = document.getElementById("goals_id");
-    div.innerHTML += 'Goal '+g['id']+' : ';
+    div.innerHTML += 'Tarefa '+g['id']+' : ';
 
     var obj = sim_goal(g);
     src_txt = g['src'];
@@ -288,7 +288,7 @@ function show_goals(g)
     dst_txt = g['dst'];
     if (g['dst_type'] == 'hid')
 	dst_txt = g['h2']['name'];
-    div.innerHTML += '<i>'+g['src_name']+" <b>"+src_txt+'</b></i> needs to communicate with <i>'+g['dst_name']+" <b>"+dst_txt+'</b></i> - Status : '+obj.text+'<br />\n';
+    div.innerHTML += '<span>'+g['src_name']+" <b>"+src_txt+'</b></span> needs to communicate with <span>'+g['dst_name']+" <b>"+dst_txt+'</b></span> - Status : '+obj.text+'<br />\n';
     return (obj.status);
 }
 
@@ -299,10 +299,11 @@ function all_goals()
 	g_sim_logs = '** generated for login "'+g_my_login+'" **\n';
     else
 	g_sim_logs = '** evaluation mode round '+g_eval_lvls.length+'**\n';
-    document.getElementById("goals_id").innerHTML = '<h2>Level '+level+' : </h2>\n';
+    document.getElementById("goals_id").innerHTML = '<h2>Nivel : '+level+' </h2>\n';
     var nb = 0;
     goals.forEach(elem => nb += show_goals(elem));
-    document.getElementById("goals_id").innerHTML += '<input type=button value="Check again" onclick="all_goals();"> <input type=button value="Get my config" onclick="dl_config();">';
+    document.getElementById("goals_id").innerHTML +=
+      '<button type=button id="btn_all_goals" onclick="all_goals();">Verifique <i class="bi bi-arrow-clockwise"></i></button> <input type=button value="Obter configuração" id="btn_dl_config" onclick="dl_config();">';
     if (nb == goals.length)
     {
 	if (g_my_login != '')
